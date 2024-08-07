@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Budget Tracker | Rastreador de Presupuesto Genial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #3498db;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        input, select {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            background-color: #fff;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+        tr {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        tr:hover {
+            transform: translateY(-3px);
+        }
+        #memberSection, #transactionSection, #summarySection {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        #summarySection {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        #summarySection p {
+            font-size: 1.2rem;
+        }
+        #summarySection span {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #3498db;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cool Budget Tracker | Rastreador de Presupuesto Genial</h1>
+        
+        <div id="memberSection" class="fade-in">
+            <h2>Squad Members | Miembros del Equipo</h2>
+            <input type="text" id="newMemberInput" placeholder="Enter member name | Ingrese el nombre del miembro">
+            <button onclick="addMember()">Add to Squad | Agregar al Equipo</button>
+            <select id="memberSelect" onchange="selectMember()">
+                <option value="">Select a squad member | Seleccione un miembro del equipo</option>
+            </select>
+            <div id="memberList"></div>
+        </div>
+
+        <div id="transactionSection" class="fade-in">
+            <h2>Cash Flow | Flujo de Efectivo</h2>
+            <input type="date" id="transactionDate">
+            <input type="text" id="transactionDescription" placeholder="What's it for? | ¿Para qué es?">
+            <input type="number" id="transactionAmount" placeholder="How much? | ¿Cuánto?">
+            <select id="transactionType">
+                <option value="income">Cha-ching! (Income) | ¡Cha-ching! (Ingreso)</option>
+                <option value="expense">Ouch! (Expense) | ¡Ay! (Gasto)</option>
+            </select>
+            <button onclick="addTransaction()">Add Transaction | Agregar Transacción</button>
+            <table id="transactionTable">
+                <thead>
+                    <tr>
+                        <th>When | Cuándo</th>
+                        <th>What | Qué</th>
+                        <th>How Much | Cuánto</th>
+                        <th>Type | Tipo</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="summarySection" class="fade-in">
+            <div>
+                <h3>Total Income | Ingreso Total</h3>
+                <p><span id="totalIncome">₹0</span></p>
+            </div>
+            <div>
+                <h3>Total Expenses | Gastos Totales</h3>
+                <p><span id="totalExpenses">₹0</span></p>
+            </div>
+            <div>
+                <h3>Balance | Saldo</h3>
+                <p><span id="balance">₹0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let familyMembers = [];
+        let transactions = [];
+        let selectedMember = null;
+
+        function addMember() {
+            const memberName = document.getElementById('newMemberInput').value.trim();
+            if (memberName) {
+                const newMember = { id: Date.now(), name: memberName };
+                familyMembers.push(newMember);
+                updateMemberList();
+                document.getElementById('newMemberInput').value = '';
+            }
+        }
+
+        function updateMemberList() {
+            const memberSelect = document.getElementById('memberSelect');
+            const memberList = document.getElementById('memberList');
+            
+            memberSelect.innerHTML = '<option value="">Select a squad member | Seleccione un miembro del equipo</option>';
+            familyMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.name;
+                memberSelect.appendChild(option);
+            });
+
+            memberList.innerHTML = '';
+            familyMembers.forEach(member => {
+                const div = document.createElement('div');
+                div.textContent = member.name;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Remove | Eliminar';
+                deleteBtn.onclick = () => deleteMember(member.id);
+                div.appendChild(deleteBtn);
+                memberList.appendChild(div);
+            });
+        }
+
+        function deleteMember(memberId) {
+            familyMembers = familyMembers.filter(member => member.id !== memberId);
+            transactions = transactions.filter(transaction => transaction.memberId !== memberId);
+            updateMemberList();
+            if (selectedMember && selectedMember.id === memberId) {
+                selectedMember = null;
+                document.getElementById('memberSelect').value = '';
+            }
+            updateTransactionTable();
+            updateSummary();
+        }
+
+        function selectMember() {
+            const memberId = document.getElementById('memberSelect').value;
+            selectedMember = familyMembers.find(member => member.id === Number(memberId));
+            updateTransactionTable();
+            updateSummary();
+        }
+
+        function addTransaction() {
+            if (!selectedMember) {
+                alert('Please select a squad member first. | Por favor, seleccione un miembro del equipo primero.');
+                return;
+            }
+
+            const date = document.getElementById('transactionDate').value;
+            const description = document.getElementById('transactionDescription').value;
+            let amount = Number(document.getElementById('transactionAmount').value);
+            const type = document.getElementById('transactionType').value;
+
+            if (!date || !description || !amount) {
+                alert('Please fill all fields. | Por favor, complete todos los campos.');
+                return;
+            }
+
+            if (type === 'expense') {
+                amount = -amount;
+            }
+
+            const newTransaction = {
+                id: Date.now(),
+                memberId: selectedMember.id,
+                date,
+                description,
+                amount
+            };
+
+            transactions.push(newTransaction);
+            updateTransactionTable();
+            updateSummary();
+
+            document.getElementById('transactionDate').value = '';
+            document.getElementById('transactionDescription').value = '';
+            document.getElementById('transactionAmount').value = '';
+        }
+
+        function updateTransactionTable() {
+            const tableBody = document.getElementById('transactionTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            if (selectedMember) {
+                const memberTransactions = transactions.filter(t => t.memberId === selectedMember.id);
+                memberTransactions.forEach(transaction => {
+                    const row = tableBody.insertRow();
+                    row.insertCell(0).textContent = transaction.date;
+                    row.insertCell(1).textContent = transaction.description;
+                    row.insertCell(2).textContent = '₹' + Math.abs(transaction.amount).toFixed(2);
+                    row.insertCell(3).textContent = transaction.amount >= 0 ? 'Income | Ingreso' : 'Expense | Gasto';
+                });
+            }
+        }
+
+        function updateSummary() {
+            let totalIncome = 0;
+            let totalExpenses = 0;
+
+            if (selectedMember) {
+                const memberTransactions = transactions.filter(t => t.memberId === selectedMember.id);
+                totalIncome = memberTransactions.reduce((sum, t) => t.amount > 0 ? sum + t.amount : sum, 0);
+                totalExpenses = Math.abs(memberTransactions.reduce((sum, t) => t.amount < 0 ? sum + t.amount : sum, 0));
+            }
+
+            const balance = totalIncome - totalExpenses;
+
+            document.getElementById('totalIncome').textContent = '₹' + totalIncome.toFixed(2);
+            document.getElementById('totalExpenses').textContent = '₹' + totalExpenses.toFixed(2);
+            document.getElementById('balance').textContent = '₹' + balance.toFixed(2);
+        }
+
+        updateMemberList();
+        updateTransactionTable();
+        updateSummary();
+    </script>
+</body>
+</html>
